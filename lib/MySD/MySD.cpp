@@ -51,3 +51,7 @@ String MySD::readCSVRecord(File file, int recordNumber) {
     }
     return "";
 }
+
+bool MySD::deleteFile(const String& path) {
+    return SD.remove(path);
+}

@@ -11,6 +11,7 @@ public:
     File openFile(const char* fileName, const char* mode);
     bool writeCSVRecord(File file, const String& record);
     bool appendCSVRecord(File file, const String& record);
+    bool deleteFile(const String& path); 
     String readCSVRecord(File file, int recordNumber);
 private:
     bool isInitialized;

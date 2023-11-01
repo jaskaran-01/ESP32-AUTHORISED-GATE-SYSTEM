@@ -23,8 +23,7 @@ void setup() {
         if (dataFile) {
             // Write "Hello, World!" in CSV format to the file
             dataFile.print("Hello,");
-            dataFile.print("World!");
-            dataFile.println(); // Add a newline to separate rows
+            dataFile.println("World!"); // Add a newline to separate rows
             dataFile.close();
             Serial.println("Data written to the file.");
         } else {
@@ -52,6 +51,9 @@ void setup() {
             endTime = millis();
             Serial.print("Time taken (ms): ");
             Serial.println(endTime - startTime);
+
+            // Delete the test file
+            sdCard.deleteFile("test.csv");
         } else {
             Serial.println("Error reading the file.");
         }
