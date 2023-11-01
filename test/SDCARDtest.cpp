@@ -1,5 +1,7 @@
 #include "MySD.h"
 #include <SPI.h>
+#include <sstream>
+#include <string>
 
 // Define the SD card SS pin (CS pin)
 #define SD_SS_PIN 5
@@ -7,59 +9,68 @@
 // Create an instance of the MySD library
 MySD sdCard;
 
-unsigned long startTime;
-unsigned long endTime;
-
 void setup() {
     Serial.begin(115200);
 
     // Initialize the SD card
     if (sdCard.init(SD_SS_PIN)) {
-        // Record the start time
-        startTime = millis();
+        Serial.println("SD card initialized.");
 
-        // Create a file
-        File dataFile = sdCard.openFile("test.csv", FILE_WRITE);
-        if (dataFile) {
-            // Write "Hello, World!" in CSV format to the file
-            dataFile.print("Hello,");
-            dataFile.println("World!"); // Add a newline to separate rows
+        // Wait for user input from the Serial Monitor
+        Serial.println("Enter a single line string:");
+        while (!Serial.available()) {
+            // Wait for input
+        }
+        
+        // Read the input string
+        String inputString = Serial.readStringUntil('\n');
+        
+        // Create a new file
+        if (sdCard.createFile("/test.csv")) {
+            Serial.println("File created successfully.");
+            File dataFile = sdCard.openFile("/test.csv", FILE_WRITE);
+
+            // Split the input into words and write to the file in CSV format
+            String new_str="";
+            int spaceIndex = 0;
+            do {
+                spaceIndex = inputString.indexOf(' ');
+                if (spaceIndex != -1) {
+                    String word = inputString.substring(0, spaceIndex);
+                    inputString = inputString.substring(spaceIndex + 1);
+                    new_str+=word+",";
+                }
+            }while (spaceIndex != -1);
+            new_str+=inputString;
+            Serial.println(new_str);
+            sdCard.appendCSVRecord(dataFile,new_str);
             dataFile.close();
-            Serial.println("Data written to the file.");
+            Serial.println("CSV records written to the file.");
         } else {
             Serial.println("Error creating the file.");
         }
 
         // Read and print the contents of the CSV file in tabular format
-        dataFile = sdCard.openFile("test.csv", FILE_READ);
+        File dataFile = sdCard.openFile("/test.csv", FILE_READ);
         if (dataFile) {
             while (dataFile.available()) {
-                String line = dataFile.readStringUntil('\n');
-                // Split the line into columns based on the comma delimiter
-                int commaIndex = line.indexOf(',');
-                String column1 = line.substring(0, commaIndex);
-                String column2 = line.substring(commaIndex + 1);
-
-                // Print in tabular format
-                Serial.print(column1);
-                Serial.print("\t"); // Tab delimiter
-                Serial.println(column2);
+                String line = sdCard.readCSVRecord(dataFile, 0);
+                Serial.println(line);
             }
             dataFile.close();
-
-            // Record the end time and calculate the elapsed time
-            endTime = millis();
-            Serial.print("Time taken (ms): ");
-            Serial.println(endTime - startTime);
-
-            // Delete the test file
-            sdCard.deleteFile("test.csv");
+        if(sdCard.deleteFile("/test.csv")){
+            Serial.println("file deleted");
+        }
+        else{
+            Serial.println("Error in file deletion");
+        }
         } else {
             Serial.println("Error reading the file.");
         }
     } else {
         Serial.println("Error initializing SD card");
     }
+
 }
 
 void loop() {
