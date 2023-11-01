@@ -23,6 +23,7 @@ File MySD::openFile(const char* fileName, const char* mode) {
 
 bool MySD::writeCSVRecord(File file, const String& record) {
     if (file) {
+        file.seek(file.size());
         file.println(record);
         return true;
     }
@@ -32,7 +33,7 @@ bool MySD::writeCSVRecord(File file, const String& record) {
 bool MySD::appendCSVRecord(File file, const String& record) {
     if (file) {
         file.seek(file.size());
-        file.println(record);
+        file.print(record);
         return true;
     }
     return false;
@@ -54,4 +55,12 @@ String MySD::readCSVRecord(File file, int recordNumber) {
 
 bool MySD::deleteFile(const String& path) {
     return SD.remove(path);
+}
+bool MySD::createFile(const String& path) {
+    fs::File file = SD.open(path, FILE_WRITE);
+    if (file) {
+        file.close();
+        return true;
+    }
+    return false;
 }
