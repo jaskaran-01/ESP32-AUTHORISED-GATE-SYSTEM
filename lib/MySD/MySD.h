@@ -7,7 +7,7 @@
 class MySD {
 public:
     MySD();
-    bool init(uint8_t ssPin);
+    bool init(uint8_t ssPin,SPIClass &spi);
     File openFile(const char* fileName, const char* mode);
     bool writeCSVRecord(File file, const String& record);
     bool appendCSVRecord(File file, const String& record);

@@ -4,9 +4,9 @@ MySD::MySD() {
     isInitialized = false;
 }
 
-bool MySD::init(uint8_t ssPin) {
+bool MySD::init(uint8_t ssPin,SPIClass &spi) {
     if (!isInitialized) {
-        if (SD.begin(ssPin)) {  // Initialize with the provided SS pin
+        if (SD.begin(ssPin,spi)) {  // Initialize with the provided SS pin
             isInitialized = true;
             return true;
         }

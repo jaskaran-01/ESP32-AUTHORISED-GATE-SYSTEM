@@ -3,17 +3,23 @@
 #include <sstream>
 #include <string>
 
-// Define the SD card SS pin (CS pin)
-#define SD_SS_PIN 5
 
+// Define the SD card pins
+  #define HSPI_MISO   27
+  #define HSPI_MOSI   13
+  #define HSPI_SCLK   14
+  #define HSPI_SS     15
+  SPIClass * hspi = NULL;
 // Create an instance of the MySD library
 MySD sdCard;
 
 void setup() {
     Serial.begin(115200);
-
+    delay(1000);
+    hspi = new SPIClass();
+    hspi->begin(HSPI_SCLK,HSPI_MISO,HSPI_MOSI,HSPI_SS);
     // Initialize the SD card
-    if (sdCard.init(SD_SS_PIN)) {
+    if (sdCard.init(HSPI_SS,*hspi)) {
         Serial.println("SD card initialized.");
 
         // Wait for user input from the Serial Monitor
