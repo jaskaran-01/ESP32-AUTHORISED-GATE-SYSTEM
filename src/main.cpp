@@ -1,103 +1,68 @@
-// #include <WiFi.h>
-// #include <HTTPClient.h>
-
-// const char WIFI_SSID[] = "sheila";
-// const char WIFI_PASSWORD[] = "Jaskaran123";
-
-// String HOST_NAME = "http://192.168.36.205"; // change to your PC's IP address
-// String PATH_NAME   = "/get_chkin.php";
-// String queryString = "?temperature=30.5";
-
-// void setup() {
-//   Serial.begin(115200); 
-
-//   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-//   Serial.println("Connecting");
-//   while(WiFi.status() != WL_CONNECTED) {
-//     delay(500);
-//     Serial.print(".");
-//   }
-
-//   Serial.println("");
-//   Serial.print("Connected to WiFi network with IP Address: ");
-//   Serial.println(WiFi.localIP());
-  
-//   HTTPClient http;
-
-//   http.begin(HOST_NAME + PATH_NAME ); //HTTP
-//   int httpCode = http.GET();
-
-//   // httpCode will be negative on error
-//   if(httpCode > 0) {
-//     // file found at server
-//     if(httpCode == HTTP_CODE_OK) {
-//       String payload = http.getString();
-//       Serial.println(payload);
-//     } else {
-//       // HTTP header has been send and Server response header has been handled
-//       Serial.printf("[HTTP] GET... code: %d\n", httpCode);
-//     }
-//   } else {
-//     Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
-//   }
-
-//   http.end();
-// }
-
-// void loop() {
-
-// }
 
 
-#include <Arduino.h>
-#include <WiFi.h>
-#include <HTTPClient.h>
-#include "DBConn.h"
+#include "MySD.h"
+#include <SPI.h>
+#include <sstream>
+#include <string>
+#include <MFRC522.h>
 
-// Replace with your network credentials
-const char* ssid = "sheila";
-const char* password = "Jaskaran123";
+#define HSPI_MISO   27
+#define HSPI_MOSI   13
+#define HSPI_SCLK   14
+#define HSPI_SS     15
+SPIClass * hspi = new SPIClass();
 
-// Replace with your ESP32's IP address
-const char* servIP = "http://192.168.36.205"; // Change to your ESP32's actual IP
+ void csvAppend(String str);
+ String csvRead(int recNum);
 
-// Create an instance of the DBConn library
-DBConn DBConn(servIP);
+#define RFID_MOSI     23
+#define RFID_MISO     19
+#define RFID_SS       5
+#define RFID_SCLK     18
+#define RFID_RST      21     // Define the RST_PIN for the RFID reader (can be any GPIO pin)
 
+MFRC522 mfrc522(RFID_SS,RFID_RST);  // Create MFRC522 instance
+MySD sdCard;
 void setup() {
-    Serial.begin(115200);
-
-    // Connect to Wi-Fi
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(1000);
-        Serial.println("Connecting to WiFi...");
-    }
-    Serial.println("Connected to WiFi");
-
-    bool chkinValue;
-
-    // Test the checkUIDPresence method
-    Serial.println("Checking UID presence...");
-    if (DBConn.checkUIDPresence("8e26d873")) {
-        Serial.println("UID is present in the database.");
-    } else {
-        Serial.println("UID is not present in the database.");
-    }
-
-    // Test the getAndToggleChkin method
-    Serial.println("Getting and toggling Chkin value...");
-    if (DBConn.getAndToggleChkin("8e26d873", chkinValue)) {
-        if (chkinValue) {
-            Serial.println("Chkin value is now 1.");
-        } else {
-            Serial.println("Chkin value is now 0.");
-        }
-    } else {
-        Serial.println("Failed to get and toggle Chkin value.");
-    }
+  hspi->begin(HSPI_SCLK,HSPI_MISO,HSPI_MOSI,HSPI_SS);
+  Serial.begin(115200);
+  SPI.begin(RFID_SCLK,RFID_MISO,RFID_MOSI,RFID_SS);     // Initialize SPI communication
+  mfrc522.PCD_Init();  // Initialize the RFID reader
+  if (sdCard.init(HSPI_SS,*hspi)) Serial.println("SD card initialised !!");
+  else Serial.println("SD card failed :(!!");
+  Serial.println("Place an RFID card near the reader...");
 }
-
+int count=0;
 void loop() {
-    // Your loop code here
+  String fetch_id;
+    if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()) {
+    // Print the UID of the card
+    Serial.print("Card UID: ");
+    count++;
+    for (byte i = 0; i < mfrc522.uid.size; i++) {
+      Serial.print(mfrc522.uid.uidByte[i], HEX);
+      Serial.print(" ");
+      fetch_id+=String(mfrc522.uid.uidByte[i], HEX);
+
+    }
+    Serial.println(fetch_id);
+    csvAppend(fetch_id);
+    Serial.println();
+    
+    // Halt PICC and stop communication
+    mfrc522.PICC_HaltA();
+    mfrc522.PCD_StopCrypto1();
+    Serial.println(csvRead(count));
+  }// Look for new RFID cards
+ 
+}
+void csvAppend(String str){
+  File dataFile = sdCard.openFile("/data.csv", FILE_WRITE);
+  sdCard.writeCSVRecord(dataFile,str);
+  dataFile.close();
+}
+String csvRead(int recNum){
+  File dataFile = sdCard.openFile("/data.csv", FILE_READ);
+  dataFile.close();
+  return(sdCard.readCSVRecord(dataFile, recNum));
 }

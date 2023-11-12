@@ -21,7 +21,7 @@ bool DBConn::getAndToggleChkin(String UID, bool& chkinValue) {
     // Check if the UID is present
     if (checkUIDPresence(UID)) {
         // Get the Chkin value and toggle it
-        String url = serverAddress + "/toggle_chkin.php?UID=" + UID;
+        String url = serverAddress + "/get-and-toggle-chkin.php?UID=" + UID;
         if (http.begin(url)) {
             int httpCode = http.GET();
             if (httpCode == HTTP_CODE_OK) {
