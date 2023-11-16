@@ -36,9 +36,9 @@ Before you begin, ensure you have XAMPP installed on your machine. You can downl
     - `chkin` (tinyint(1))
     - `DT` (datetime)
     > **Note:** If you want to create a different SQL database architecture changes will be required in the following:
-        1. PHP files
-        2. DBConn library
-        3. main code (adjust the way the system reacts to db read writes)
+    1. PHP files
+    2. DBConn library
+    3. main code (adjust the way the system reacts to db read writes)
 
 7. Use the db_filler.py to fill out the DB:
     - please make required changes in the python code to fit your needs.
