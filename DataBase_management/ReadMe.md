@@ -35,6 +35,8 @@ Before you begin, ensure you have XAMPP installed on your machine. You can downl
     - `RegNo` (int(9))
     - `chkin` (tinyint(1))
     - `DT` (datetime)
+
+    
     > **Note:** If you want to create a different SQL database architecture changes will be required in the following:
     1. PHP files
     2. DBConn library
