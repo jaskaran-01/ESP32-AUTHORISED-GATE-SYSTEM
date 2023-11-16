@@ -22,17 +22,26 @@ Before you begin, ensure you have XAMPP installed on your machine. You can downl
 
 3. Log in to phpMyAdmin using the default credentials (username: `root`, password: `''`).
 
-4. Create a new database named "student_register":
+4. Create a new database named "student register":
 
    - Click on the "New" button in the left sidebar.
-   - Enter "student_register" as the database name and click "Create."
+   - Enter "student register" as the database name and click "Create."
 
 5. Select the newly created database from the left sidebar.
 
-6. Import the database schema:
+6. Create a new table in the DB called students with following columns :
+    - `UID` (varchar(10))
+    - `Name` (varchar(100))
+    - `RegNo` (int(9))
+    - `chkin` (tinyint(1))
+    - `DT` (datetime)
+    > **Note:** If you want to create a different SQL database architecture changes will be required in the following:
+        1. PHP files
+        2. DBConn library
+        3. main code (adjust the way the system reacts to db read writes)
 
-   - Click on the "Import" tab.
-   - Choose the `database.sql` file and click "Go."
+7. Use the db_filler.py to fill out the DB:
+    - please make required changes in the python code to fit your needs.
 
 ## Usage
 
